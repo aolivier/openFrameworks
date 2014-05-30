@@ -312,15 +312,79 @@ bool ofLoadImage(ofShortPixels & pix, const ofBuffer & buffer){
 	return loadImage(pix,buffer);
 }
 
+//soso
+bool wasImageLoaded(string *iFilename)
+{
+	if(iFilename){
+		for(int i=0; i < allImages.size(); i++){
+			if(strcmp(iFilename, allImages[i]->getFileName()) == 0){
+				if(allImages[i]->wasTexLoaded()){
+					//printf("ofImage > %s was already loaded\n", iFilename);
+					return true;
+				}
+			}
+		}
+		return false;
+	}else{
+		return false;
+	}
+}
+
+//soso
+ofImage* getImageWithFilename(string iFilename)
+{
+	for(int i=0; i < allImages.size(); i++){
+		if(strcmp(iFilename, allImages[i]->getFileName()) == 0){
+			return allImages[i];
+		}
+	}
+	return NULL;
+}
+
+//soso - copy enough information from image to be able to call draw()
+void copyFromImage(ofImage *iImage)
+{
+	if(iImage){
+		myPixels.width = iImage->myPixels.width;
+		myPixels.height = iImage->myPixels.height;
+		bUseTexture = iImage->bUseTexture;
+		
+		tex.copyFromTexture(&iImage->getTextureReference());
+	}
+}
+
+//soso
+bool wasTexLoaded()
+{
+	return texLoaded;
+}
 
 //----------------------------------------------------------------
 bool ofLoadImage(ofTexture & tex, string path){
 	ofPixels pixels;
-	bool loaded = ofLoadImage(pixels,path);
-	if(loaded){
-		tex.allocate(pixels.getWidth(), pixels.getHeight(), ofGetGlInternalFormat(pixels));
-		tex.loadData(pixels);
-	}
+  
+  // soso - first check if tex was already loaded
+  if (!wasImageLoaded(path)){
+    
+    bool loaded = ofLoadImage(pixels,path);
+    if(loaded){
+      tex.allocate(pixels.getWidth(), pixels.getHeight(), ofGetGlInternalFormat(pixels));
+      tex.loadData(pixels);
+    }
+    
+  }else{
+    
+    ofImage *image = getImageWithFilename(path);
+    
+    if (image){
+      copyFromImage(image);
+    }else{
+      return false;
+    }
+    
+  }
+  
+
 	return loaded;
 }
 
@@ -544,11 +608,10 @@ ofImage_<PixelType>::ofImage_(){
 	type						= OF_IMAGE_UNDEFINED;
 	bUseTexture					= true;		// the default is, yes, use a texture
 	destroyPixelsFlag 			= false; //soso
-
+  
 	//----------------------- init free image if necessary
 	ofInitFreeImage();
-
-
+  
 
 }
 
@@ -564,7 +627,7 @@ ofImage_<PixelType>::ofImage_(const ofPixels_<PixelType> & pix){
 
 	//----------------------- init free image if necessary
 	ofInitFreeImage();
-
+  
 
 	setFromPixels(pix);
 }
@@ -581,6 +644,10 @@ ofImage_<PixelType>::ofImage_(const ofFile & file){
 	//----------------------- init free image if necessary
 	ofInitFreeImage();
 
+  // soso - double image protection
+  filePath = NULL;
+  texLoaded = false;
+  allImages.push_back(this);
 
 	loadImage(file);
 }
@@ -596,6 +663,11 @@ ofImage_<PixelType>::ofImage_(const string & filename){
 
 	//----------------------- init free image if necessary
 	ofInitFreeImage();
+  
+  // soso - double image protection
+  filePath = NULL;
+  texLoaded = false;
+  allImages.push_back(this);
 
 
 	loadImage(filename);

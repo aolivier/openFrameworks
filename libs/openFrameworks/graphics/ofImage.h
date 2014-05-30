@@ -473,6 +473,12 @@ public:
     
     /// \brief Loads ofPixels data into ofTexture so that draw() calls reflect changes to the pixels.
     void reloadTexture();
+  
+    string				getFileName();	//soso
+    bool				wasImageLoaded(string iFilename);	//soso
+    ofImage*			getImageWithFilename(string iFilename);	//soso
+    void				copyFromImage(ofImage *iImage);	//soso
+    bool				wasTexLoaded();	//soso
 
     int width;  ///< \brief Image width in pixels.
     int height; ///< \brief Image Height in pixels.
@@ -498,6 +504,9 @@ typedef ofImage_<unsigned char> ofImage;
 typedef ofImage_<float> ofFloatImage;
 typedef ofImage_<unsigned short> ofShortImage;
 
+string				*filePath;	//soso
+static vector<ofImage*>	allImages;	//soso
+bool				texLoaded;	//soso
 
 
 
